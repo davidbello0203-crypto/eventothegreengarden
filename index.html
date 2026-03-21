@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Green Garde — 4 de Abril</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:          #090c08;
+      --surface:     #0f1309;
+      --green:       #3d5c2e;
+      --green-mid:   #567a42;
+      --green-pale:  #90b87a;
+      --amber:       #b8872e;
+      --amber-light: #d4a84e;
+      --cream:       #e2d9c6;
+      --muted:       #7e7a6e;
+      --white:       #f2ede4;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── Cursor personalizado ── */
+    #cursor {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--green-pale);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s;
+      mix-blend-mode: exclusion;
+    }
+    #cursor.big {
+      width: 40px; height: 40px;
+      background: rgba(144,184,122,.3);
+    }
+
+    /* ── Luces fijas ── */
+    .lights-bar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 110px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .lights-bar svg { width: 100%; height: 100%; }
+
+    /* ── Fireflies ── */
+    #fireflies {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .ff {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: var(--amber-light);
+      border-radius: 50%;
+      filter: blur(1px);
+      opacity: 0;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 130px 24px 90px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .hero-glow {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 55% at 20% 45%, rgba(61,92,46,.2) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 45% at 80% 55%, rgba(61,92,46,.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .leaf { position: absolute; pointer-events: none; }
+    .leaf-tl { top: -40px; left: -60px; width: 360px; opacity: 0; }
+    .leaf-br { bottom: -40px; right: -60px; width: 300px; opacity: 0; }
+    .leaf-tr { top: 50px; right: -50px; width: 230px; opacity: 0; }
+
+    .hero-tag {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--green-pale);
+      margin-bottom: 30px;
+      opacity: 0;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(58px, 13vw, 122px);
+      font-weight: 300;
+      line-height: .9;
+      color: var(--white);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* cada word envuelto para split */
+    .word { display: inline-block; overflow: hidden; }
+    .char { display: inline-block; }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--green-pale);
+    }
+
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 3.5vw, 24px);
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 54px;
+      opacity: 0;
+    }
+
+    .date-pill {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(144,184,122,.25);
+      padding: 22px 52px;
+      gap: 2px;
+      opacity: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .date-pill::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(61,92,46,.08), transparent);
+    }
+
+    .date-pill .big { font-family: 'Cormorant Garamond', serif; font-size: 54px; font-weight: 300; line-height: 1; color: var(--white); }
+    .date-pill .sm  { font-size: 10px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: var(--green-pale); }
+    .date-pill .yr  { font-size: 11px; letter-spacing: 2px; color: var(--muted); }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 38px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      opacity: 0;
+    }
+    .scroll-hint span { font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--muted); }
+    .scroll-line {
+      width: 1px; height: 48px;
+      background: linear-gradient(to bottom, var(--green-pale), transparent);
+    }
+
+    /* ── Wrap ── */
+    .wrap { max-width: 860px; margin: 0 auto; padding: 80px 24px; }
+
+    .sec-label {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--green-pale);
+      margin-bottom: 44px;
+      opacity: 0;
+    }
+    .sec-label::before { content: ''; display: block; width: 28px; height: 1px; background: var(--green-mid); }
+
+    /* ── Info grid ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: rgba(61,92,46,.15);
+      border: 1px solid rgba(61,92,46,.2);
+      margin-bottom: 84px;
+      gap: 1px;
+    }
+    @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr 1fr; } }
+
+    .info-card {
+      background: var(--surface);
+      padding: 28px 22px;
+      display: flex; flex-direction: column; gap: 6px;
+      opacity: 0;
+      transform: translateY(20px);
+      position: relative;
+      overflow: hidden;
+    }
+    .info-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--green-pale);
+      transition: width .4s ease;
+    }
+    .info-card:hover::after { width: 100%; }
+
+    .info-card .lbl { font-size: 9px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--green-pale); }
+    .info-card .val { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--white); line-height: 1.15; }
+    .info-card .sub { font-size: 11px; color: var(--muted); }
+
+    /* ── Timeline ── */
+    .tl-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 6vw, 48px);
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 40px;
+      opacity: 0;
+    }
+
+    .timeline { display: flex; flex-direction: column; margin-bottom: 80px; }
+
+    .tl-item {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      position: relative;
+      opacity: 0;
+    }
+
+    .tl-line {
+      position: absolute;
+      left: 90px; top: 38px; bottom: 0;
+      width: 1px;
+      background: rgba(61,92,46,.28);
+      transform-origin: top;
+      transform: scaleY(0);
+    }
+    .tl-item:last-child .tl-line { display: none; }
+
+    .tl-dot {
+      position: absolute;
+      left: 86px; top: 33px;
+      width: 9px; height: 9px;
+      background: var(--green-pale);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(144,184,122,.5);
+      opacity: 0;
+      scale: 0;
+    }
+
+    .tl-time {
+      padding-top: 32px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      color: var(--green-pale);
+      text-transform: uppercase;
+    }
+
+    .tl-body {
+      padding: 24px 28px;
+      border-left: 1px solid rgba(61,92,46,.28);
+    }
+
+    .tl-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .tl-desc { font-size: 13px; line-height: 1.75; color: var(--muted); }
+
+    .fire-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(184,135,46,.1);
+      border: 1px solid rgba(184,135,46,.28);
+      color: var(--amber-light);
+      padding: 5px 14px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 12px;
+    }
+
+    /* ── Aviso ── */
+    .notice {
+      border-left: 2px solid var(--green);
+      background: var(--surface);
+      padding: 18px 22px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+      margin-bottom: 80px;
+      opacity: 0;
+    }
+    .notice strong { color: var(--cream); font-weight: 400; }
+
+    /* ── RSVP ── */
+    .rsvp-box {
+      border: 1px solid rgba(61,92,46,.25);
+      background: var(--surface);
+      padding: 56px 48px;
+      margin-bottom: 80px;
+      opacity: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .rsvp-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(to right, transparent, var(--green-pale), transparent);
+      transform: scaleX(0);
+    }
+    @media (max-width: 600px) { .rsvp-box { padding: 36px 22px; } }
+
+    .rsvp-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(38px, 7vw, 52px);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .rsvp-sub { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+
+    .field { margin-bottom: 28px; }
+    .field label {
+      display: block;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green-pale);
+      margin-bottom: 12px;
+    }
+
+    .input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid rgba(61,92,46,.3);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 300;
+      padding: 16px 18px;
+      outline: none;
+      transition: border-color .3s, box-shadow .3s;
+      appearance: none;
+      border-radius: 0;
+    }
+    .input:focus {
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 3px rgba(61,92,46,.12);
+    }
+    .input::placeholder { color: rgba(126,122,110,.4); }
+
+    /* stepper */
+    .stepper { display: flex; align-items: center; width: fit-content; }
+
+    .step-btn {
+      width: 52px; height: 52px;
+      background: var(--bg);
+      border: 1px solid rgba(61,92,46,.3);
+      color: var(--cream);
+      font-size: 22px;
+      cursor: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+      user-select: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .step-btn:hover { background: rgba(61,92,46,.2); border-color: var(--green-mid); }
+
+    .step-val {
+      width: 80px; height: 52px;
+      background: var(--bg);
+      border-top: 1px solid rgba(61,92,46,.3);
+      border-bottom: 1px solid rgba(61,92,46,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      font-weight: 300;
+      color: var(--white);
+    }
+
+    .step-hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+    /* botón con efecto magnético */
+    .btn-wrap { position: relative; margin-top: 20px; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--green);
+      border: none;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 20px;
+      cursor: none;
+      transition: background .3s;
+      border-radius: 0;
+      display: block;
+    }
+    .btn-submit:hover   { background: var(--green-mid); }
+    .btn-submit:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* success */
+    .success { display: none; text-align: center; padding: 52px 0; }
+    .success-icon { font-size: 56px; margin-bottom: 20px; }
+    .success-title { font-family: 'Cormorant Garamond', serif; font-size: 46px; font-weight: 300; color: var(--white); margin-bottom: 10px; }
+    .success-text  { font-size: 14px; color: var(--muted); line-height: 1.8; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid rgba(61,92,46,.16);
+      padding: 36px 24px;
+      text-align: center;
+      opacity: 0;
+    }
+    .foot-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--green-pale); margin-bottom: 6px; }
+    .foot-sub  { font-size: 11px; letter-spacing: 1px; color: var(--muted); }
+
+    /* ── Mobile: restaurar cursor ── */
+    @media (hover: none) {
+      body { cursor: auto; }
+      #cursor { display: none; }
+      .step-btn, .btn-submit { cursor: pointer; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cursor -->
+  <div id="cursor"></div>
+
+  <!-- ── Luces colgantes ── -->
+  <div class="lights-bar">
+    <svg viewBox="0 0 1440 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,18 Q180,48 360,22 Q540,-2 720,28 Q900,58 1080,22 Q1260,-2 1440,18" fill="none" stroke="#1e2818" stroke-width="1.8"/>
+      <path d="M0,12 Q240,44 480,18 Q720,-4 960,28 Q1200,56 1440,14" fill="none" stroke="#1a2214" stroke-width="1.2"/>
+      <g class="bulb" id="b1"><line x1="90"  y1="24" x2="90"  y2="40" stroke="#1e2818" stroke-width="1"/><ellipse cx="90"  cy="46" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="90"  cy="45" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b2"><line x1="260" y1="32" x2="260" y2="48" stroke="#1e2818" stroke-width="1"/><ellipse cx="260" cy="54" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="260" cy="53" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b3"><line x1="440" y1="18" x2="440" y2="34" stroke="#1e2818" stroke-width="1"/><ellipse cx="440" cy="40" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="440" cy="39" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b4"><line x1="620" y1="27" x2="620" y2="43" stroke="#1e2818" stroke-width="1"/><ellipse cx="620" cy="49" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="620" cy="48" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b5"><line x1="820" y1="16" x2="820" y2="32" stroke="#1e2818" stroke-width="1"/><ellipse cx="820" cy="38" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="820" cy="37" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b6"><line x1="1020" y1="23" x2="1020" y2="39" stroke="#1e2818" stroke-width="1"/><ellipse cx="1020" cy="45" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="1020" cy="44" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b7"><line x1="1220" y1="14" x2="1220" y2="30" stroke="#1e2818" stroke-width="1"/><ellipse cx="1220" cy="36" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="1220" cy="35" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+      <g class="bulb" id="b8"><line x1="1390" y1="19" x2="1390" y2="35" stroke="#1e2818" stroke-width="1"/><ellipse cx="1390" cy="41" rx="5" ry="7" fill="#c9953a" opacity=".85"/><ellipse cx="1390" cy="40" rx="9" ry="11" fill="rgba(201,149,58,.13)"/></g>
+    </svg>
+  </div>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div id="fireflies"></div>
+
+    <!-- hojas -->
+    <svg class="leaf leaf-tl" viewBox="0 0 300 400" fill="#4a6b3c" xmlns="http://www.w3.org/2000/svg">
+      <path d="M150,400 C80,340 -10,250 20,130 C50,10 150,0 150,0 C150,0 250,10 280,130 C310,250 220,340 150,400Z"/>
+      <path d="M70,380 C20,300 -10,200 30,110 C60,20 100,40 100,40 C100,40 200,80 180,200 C160,310 70,380 70,380Z" opacity=".5"/>
+    </svg>
+    <svg class="leaf leaf-br" viewBox="0 0 300 400" fill="#3d5c2e" xmlns="http://www.w3.org/2000/svg">
+      <path d="M150,400 C80,340 -10,250 20,130 C50,10 150,0 150,0 C150,0 250,10 280,130 C310,250 220,340 150,400Z"/>
+    </svg>
+    <svg class="leaf leaf-tr" viewBox="0 0 240 340" fill="#4a6b3c" xmlns="http://www.w3.org/2000/svg">
+      <path d="M120,340 C60,280 0,190 20,100 C40,10 120,0 120,0 C120,0 200,10 220,100 C240,190 180,280 120,340Z"/>
+    </svg>
+
+    <p class="hero-tag">The Green Garde · Bar</p>
+
+    <h1 class="hero-title" id="hero-title">
+      <span class="word">Una&nbsp;</span><span class="word"><em>noche</em></span><br>
+      <span class="word">en&nbsp;</span><span class="word">el&nbsp;</span><span class="word">jardín</span>
+    </h1>
+
+    <p class="hero-sub">Música, fuego y buena vibra</p>
+
+    <div class="date-pill" id="date-pill">
+      <span class="sm">Sábado — Abril</span>
+      <span class="big">04</span>
+      <span class="yr">2026 · 12:00 PM</span>
+    </div>
+
+    <div class="scroll-hint" id="scroll-hint">
+      <span>Ver programa</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── MAIN ── -->
+  <main>
+    <div class="wrap">
+
+      <!-- Detalles -->
+      <div class="sec-label" id="lbl-1">Detalles del evento</div>
+      <div class="info-grid" id="info-grid">
+        <div class="info-card">
+          <span class="lbl">Fecha</span>
+          <span class="val">Sáb 4<br>Abr</span>
+          <span class="sub">2026</span>
+        </div>
+        <div class="info-card">
+          <span class="lbl">Inicio</span>
+          <span class="val">12 PM</span>
+          <span class="sub">Puertas abiertas</span>
+        </div>
+        <div class="info-card">
+          <span class="lbl">Cover</span>
+          <span class="val">$100</span>
+          <span class="sub">Por persona</span>
+        </div>
+        <div class="info-card">
+          <span class="lbl">Lugar</span>
+          <span class="val">The Green<br>Garde</span>
+          <span class="sub">Bar</span>
+        </div>
+      </div>
+
+      <!-- Programa -->
+      <div class="sec-label" id="lbl-2">Programa</div>
+      <h2 class="tl-title" id="tl-title">Lo que viene</h2>
+      <div class="timeline">
+        <div class="tl-item" id="tl-0">
+          <div class="tl-line"></div>
+          <div class="tl-dot"></div>
+          <span class="tl-time">12 PM</span>
+          <div class="tl-body">
+            <div class="tl-name">DJ Set</div>
+            <div class="tl-desc">Dos DJs poniendo la vibra desde mediodía. El jardín abre y la música tampoco para.</div>
+          </div>
+        </div>
+        <div class="tl-item" id="tl-1">
+          <div class="tl-line"></div>
+          <div class="tl-dot"></div>
+          <span class="tl-time">Noche</span>
+          <div class="tl-body">
+            <div class="tl-name">Regional Mexicano en vivo</div>
+            <div class="tl-desc">Dos grupos sueltan todo el sabor. Música de la buena, de la que se siente.</div>
+          </div>
+        </div>
+        <div class="tl-item" id="tl-2">
+          <div class="tl-line"></div>
+          <div class="tl-dot"></div>
+          <span class="tl-time">9 PM</span>
+          <div class="tl-body">
+            <div class="tl-name">Show de fuego</div>
+            <div class="tl-desc">Un acróbata ilumina la noche con un espectáculo que no te puedes perder.</div>
+            <span class="fire-tag">🔥 Espectáculo especial</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aviso -->
+      <div class="notice" id="notice">
+        <strong>Aviso:</strong> No se permite el ingreso de alimentos ni bebidas del exterior. Todo el consumo es dentro del establecimiento.
+      </div>
+
+      <!-- RSVP -->
+      <div class="rsvp-box" id="rsvp">
+        <div id="form-wrap">
+          <h2 class="rsvp-title">Confirma tu<br>asistencia</h2>
+          <p class="rsvp-sub">Solo tu nombre y cuántos van. Así de fácil.</p>
+
+          <form id="rsvp-form" novalidate>
+            <div class="field">
+              <label for="nombre">Tu nombre</label>
+              <input type="text" id="nombre" class="input" placeholder="¿Cómo te llamamos?" required autocomplete="off" />
+            </div>
+
+            <div class="field">
+              <label>¿Cuántos van? <span style="opacity:.5">(incluyéndote)</span></label>
+              <div class="stepper">
+                <button type="button" class="step-btn" id="btn-minus">−</button>
+                <div class="step-val" id="step-display">1</div>
+                <button type="button" class="step-btn" id="btn-plus">+</button>
+              </div>
+              <div class="step-hint">Cover de $100 por persona en taquilla</div>
+            </div>
+
+            <div class="btn-wrap">
+              <button type="submit" class="btn-submit" id="btn-submit">
+                Confirmo mi asistencia
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="success" id="success-wrap">
+          <div class="success-icon">🌿</div>
+          <h3 class="success-title">¡Te esperamos!</h3>
+          <p class="success-text">
+            Ya quedaste en la lista.<br>
+            Recuerda llevar $100 de cover por persona.<br>
+            The Green Garde · Sábado 4 de Abril · 12:00 PM
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="footer">
+    <div class="foot-name">The Green Garde</div>
+    <p class="foot-sub">Sábado 4 de Abril · Desde las 12:00 PM</p>
+  </footer>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ── Cursor ──────────────────────────────────────────────
+    const cursor = document.getElementById('cursor');
+    let mx = 0, my = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      gsap.to(cursor, { x: mx, y: my, duration: .15, ease: 'power2.out' });
+    });
+
+    document.querySelectorAll('a, button, .info-card, .step-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+    });
+
+    // ── Fireflies ────────────────────────────────────────────
+    const ffContainer = document.getElementById('fireflies');
+    for (let i = 0; i < 18; i++) {
+      const ff = document.createElement('div');
+      ff.className = 'ff';
+      ff.style.left = Math.random() * 100 + '%';
+      ff.style.top  = Math.random() * 100 + '%';
+      ffContainer.appendChild(ff);
+
+      gsap.to(ff, {
+        opacity: gsap.utils.random(.4, .9),
+        x: gsap.utils.random(-60, 60),
+        y: gsap.utils.random(-80, 80),
+        duration: gsap.utils.random(3, 7),
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: gsap.utils.random(0, 5)
+      });
+    }
+
+    // ── Luces: flicker con GSAP ───────────────────────────────
+    ['b1','b2','b3','b4','b5','b6','b7','b8'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      gsap.to(el, {
+        opacity: gsap.utils.random(.45, .7),
+        duration: gsap.utils.random(1.5, 3.5),
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut',
+        delay: i * 0.4
+      });
+    });
+
+    // ── Hero intro ────────────────────────────────────────────
+    const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // Hojas entran
+    heroTl
+      .to('.leaf-tl', { opacity: .09, x: 0, rotation: -15, duration: 1.8, ease: 'power2.out' }, 0)
+      .to('.leaf-br', { opacity: .08, x: 0, rotation: 165, duration: 1.8, ease: 'power2.out' }, 0.2)
+      .to('.leaf-tr', { opacity: .07, x: 0, rotation: 40,  duration: 1.8, ease: 'power2.out' }, 0.1)
+
+      // Tag
+      .to('.hero-tag', { opacity: 1, y: 0, duration: .7 }, 0.3)
+
+      // Título: cada word sube escalonado
+      .from('.word', {
+        y: '110%',
+        opacity: 0,
+        duration: .9,
+        stagger: .1,
+        ease: 'power4.out'
+      }, 0.5)
+
+      // Subtítulo
+      .to('.hero-sub', { opacity: 1, y: 0, duration: .7 }, 1.0)
+
+      // Fecha
+      .to('#date-pill', { opacity: 1, y: 0, duration: .7 }, 1.2)
+
+      // Hint scroll
+      .to('#scroll-hint', { opacity: 1, duration: .6 }, 1.6);
+
+    // Parallax en hojas al scroll
+    gsap.to('.leaf-tl', {
+      y: -120,
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
+    });
+    gsap.to('.leaf-br', {
+      y: -80,
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 2 }
+    });
+    gsap.to('.leaf-tr', {
+      y: -60,
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.2 }
+    });
+
+    // Scroll line pulsante
+    gsap.to('.scroll-line', {
+      scaleY: 1.3,
+      opacity: .3,
+      duration: 1.4,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      transformOrigin: 'top'
+    });
+
+    // ── Sec labels ────────────────────────────────────────────
+    ['#lbl-1', '#lbl-2'].forEach(id => {
+      gsap.to(id, {
+        opacity: 1, x: 0,
+        scrollTrigger: { trigger: id, start: 'top 88%', toggleActions: 'play none none none' },
+        duration: .7, ease: 'power2.out'
+      });
+      gsap.from(id, {
+        x: -20,
+        scrollTrigger: { trigger: id, start: 'top 88%', toggleActions: 'play none none none' },
+        duration: .7, ease: 'power2.out'
+      });
+    });
+
+    // ── Info cards stagger ────────────────────────────────────
+    gsap.to('.info-card', {
+      opacity: 1,
+      y: 0,
+      stagger: .1,
+      duration: .7,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: '#info-grid', start: 'top 85%' }
+    });
+
+    // ── Título del programa ───────────────────────────────────
+    gsap.to('#tl-title', {
+      opacity: 1, y: 0,
+      scrollTrigger: { trigger: '#tl-title', start: 'top 88%' },
+      duration: .8, ease: 'power3.out'
+    });
+    gsap.from('#tl-title', {
+      y: 30,
+      scrollTrigger: { trigger: '#tl-title', start: 'top 88%' },
+      duration: .8, ease: 'power3.out'
+    });
+
+    // ── Timeline items ────────────────────────────────────────
+    [0, 1, 2].forEach((i) => {
+      const item = document.getElementById('tl-' + i);
+      const dot  = item.querySelector('.tl-dot');
+      const line = item.querySelector('.tl-line');
+
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: item, start: 'top 82%' }
+      });
+
+      tl.to(item, { opacity: 1, y: 0, duration: .6, ease: 'power3.out' })
+        .to(dot,  { opacity: 1, scale: 1, duration: .4, ease: 'back.out(2)' }, '-=.2')
+        .to(line, { scaleY: 1, duration: .5, ease: 'power2.inOut' }, '-=.1');
+
+      gsap.from(item, {
+        y: 30,
+        scrollTrigger: { trigger: item, start: 'top 82%' },
+        duration: .6, ease: 'power3.out'
+      });
+    });
+
+    // ── Aviso ─────────────────────────────────────────────────
+    gsap.to('#notice', {
+      opacity: 1,
+      scrollTrigger: { trigger: '#notice', start: 'top 88%' },
+      duration: .7
+    });
+
+    // ── RSVP box ──────────────────────────────────────────────
+    gsap.to('#rsvp', {
+      opacity: 1,
+      scrollTrigger: { trigger: '#rsvp', start: 'top 85%' },
+      duration: .9, ease: 'power3.out'
+    });
+    gsap.from('#rsvp', {
+      y: 40,
+      scrollTrigger: { trigger: '#rsvp', start: 'top 85%' },
+      duration: .9, ease: 'power3.out'
+    });
+    // Línea superior
+    gsap.to('#rsvp::before', {
+      scaleX: 1,
+      scrollTrigger: { trigger: '#rsvp', start: 'top 85%' },
+      duration: .8, ease: 'power2.out', delay: .3
+    });
+
+    // ── Footer ────────────────────────────────────────────────
+    gsap.to('#footer', {
+      opacity: 1,
+      scrollTrigger: { trigger: '#footer', start: 'top 95%' },
+      duration: .6
+    });
+
+    // ── Stepper ───────────────────────────────────────────────
+    let guests = 1;
+    const display  = document.getElementById('step-display');
+    const btnMinus = document.getElementById('btn-minus');
+    const btnPlus  = document.getElementById('btn-plus');
+
+    function setGuests(n) {
+      guests = Math.max(1, Math.min(20, n));
+      gsap.fromTo(display,
+        { scale: 1.25, color: '#90b87a' },
+        { scale: 1, color: '#f2ede4', duration: .25, ease: 'back.out(2)' }
+      );
+      display.textContent = guests;
+    }
+
+    btnPlus.addEventListener('click',  () => setGuests(guests + 1));
+    btnMinus.addEventListener('click', () => setGuests(guests - 1));
+
+    // ── Form submit ───────────────────────────────────────────
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxHcdknLbbo68VGx7u0VxW36kxOMNBcaCLg32kys22K3HrrDk-3KAwrjkOtutk9HXrQ/exec';
+
+    const form        = document.getElementById('rsvp-form');
+    const btnSubmit   = document.getElementById('btn-submit');
+    const formWrap    = document.getElementById('form-wrap');
+    const successWrap = document.getElementById('success-wrap');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      if (!nombre) { document.getElementById('nombre').focus(); return; }
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Enviando...';
+
+      const payload = {
+        nombre,
+        personas: guests,
+        fecha: new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })
+      };
+
+      try {
+        await fetch(SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (_) {}
+
+      // Animación de salida del form
+      gsap.to(formWrap, {
+        opacity: 0, y: -12, duration: .4, ease: 'power2.in',
+        onComplete: () => {
+          formWrap.style.display = 'none';
+          successWrap.style.display = 'block';
+          gsap.from(successWrap, { opacity: 0, y: 20, duration: .6, ease: 'power3.out' });
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>
